@@ -1,29 +1,20 @@
 ﻿using Microsoft.Owin;
-using Microsoft.Owin.FileSystems;
+using Microsoft.Owin.Logging;
 using Owin;
 
 namespace LetsEncrypt.Owin
 {
     public static class LetsencryptExtension
     {
-        public static IAppBuilder UseLetsencrypt(this IAppBuilder app)
+        public static readonly string wellKnownFolderName = ".well-known";
+        public static readonly string acmeChallangeFolderName = "acme-challenge";
+
+        public static IAppBuilder UseAcmeChallenge(this IAppBuilder app)
         {
-            app.Map("/.well-known", branch =>
-            {
-                branch.Use((context, next) =>
-                {
-                    IFileInfo file;
+            var acmePathSegment = new PathString('/' + wellKnownFolderName + '/' + acmeChallangeFolderName);
+            var handler = new AcmeChallengeHandler(app.CreateLogger(typeof(AcmeChallengeHandler)), '.' + acmePathSegment.Value);
 
-                    var fileSystem = new PhysicalFileSystem(@".\.well-known");
-
-                    if (!fileSystem.TryGetFileInfo(context.Request.Path.Value, out file))
-                    {
-                        return next();
-                    }
-
-                    return context.Response.SendFileAsync(file.PhysicalPath);
-                });
-            });
+            app.MapWhen((ctx) => ctx.Request.Path.StartsWithSegments(acmePathSegment), branch => branch.Run(handler.Handle));
 
             return app;
         }
