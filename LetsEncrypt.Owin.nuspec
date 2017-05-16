@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>LetsEncrypt.Owin</id>
-    <version>1.0</version>
+    <version>1.1</version>
     <title>Owin middleware for Let's Encrypt</title>
     <authors>Yan</authors>
     <owners>CacctusSoft LLC</owners>
@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Allows your owin app return content from ./well-known folder of your app in order to obtain SSL certificate from Let's Encrypt service</description>
     <copyright>Copyright 2017</copyright>
-    <tags>letsencrypt ssl tls https owin</tags>
+    <tags>letsencrypt ssl tls https owin acme</tags>
     <dependencies>
         <group targetFramework="net45">
           <dependency id="Microsoft.Owin.StaticFiles" version="3.0.1"/>         

@@ -8,40 +8,24 @@ namespace LetsEncrypt.Owin
 {
     public class AcmeChallengeHandler
     {
-        private IFileSystem fs;
+        private Lazy<IFileSystem> filesystem;
         private ILogger logger;
 
         public AcmeChallengeHandler(ILogger logger, string baseFolder)
         {
             this.logger = logger;
-            try
-            {
-                fs = new PhysicalFileSystem(baseFolder);
-            }
-            catch (Exception e)
-            {
-                if (logger != null && logger.IsEnabled(System.Diagnostics.TraceEventType.Critical))
-                    logger.WriteCritical("Init fail, all requests will be responsed with 404", e);
-            }
+            filesystem = new Lazy<IFileSystem>(() => new PhysicalFileSystem(baseFolder));           
         }
 
 
         public Task Handle(IOwinContext context)
-        {
-            if (fs == null)
-            {
-                logger.WriteWarning("Filesystem is not initialized properly, 404 returned");
-                context.Response.StatusCode = 404;
-                return Task.FromResult(404);
-            }
-
+        {      
             var filename = context.Request.Uri.Segments[context.Request.Uri.Segments.Length - 1];
-
             if (logger.IsEnabled(System.Diagnostics.TraceEventType.Verbose))
                 logger?.WriteVerbose("Looking for file " + filename);
 
             IFileInfo file;
-            if (!fs.TryGetFileInfo(filename, out file))
+            if (!filesystem.Value.TryGetFileInfo(filename, out file))
             {
                 logger.WriteWarning("File not found, returns 404");
                 context.Response.StatusCode = 404;
